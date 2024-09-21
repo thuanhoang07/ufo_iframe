@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Map Example Using Javascript</title>
+
+    <!-- Style for text and background -->
+    <style>
+        /* Body and background styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+            height: 100vh;
+        }
+
+        /* Styled warning text */
+        #warning {
+            text-align: center;
+            font-size: 30px;
+            font-weight: bold;
+            color: #FF4136; /* Bright red */
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4); /* Subtle shadow effect */
+            animation: blink 1.5s ease-in-out infinite; /* Blinking effect */
+        }
+
+        /* Blinking effect */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Image and video container */
+        #placeholderImage, #youtubePlayer {
+            width: 1080px;
+            height: 600px;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+        }
+
+        footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+        }
+
+        a {
+            color: #FFD700; /* Gold color for the link */
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    
+</head>
+<body>
+
+    <p id="warning">UNLOCK THE DOOR BEFORE CONTROLLING IT</p>
+
+    <img id="placeholderImage" src="https://firebasestorage.googleapis.com/v0/b/video-ufo.appspot.com/o/Ph%C6%B0%C6%A1ng%20ti%E1%BB%87n%20truy%C3%AA%CC%80n%20th%C3%B4ng.jpg?alt=media&token=e1035648-aafa-4fc5-bf21-5d9f87e719b7" alt="Placeholder Image">
+    <video id="youtubePlayer" width="1080" height="600" controls autoplay muted>
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Link to your JavaScript and CSS -->
+    <script src="index.js"></script>
+
+    <script src="https://www.unpkg.com/@eohjsc/era-widget@1.0.14/src/index.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const eraWidget = new EraWidget();
+            let DOOR = null;
+            let LOCK = null;
+            let previousNN = null;  // Store previous NN state
+
+            const youtubePlayer = document.getElementById("youtubePlayer");
+            const placeholderImage = document.getElementById("placeholderImage");
+
+            // Initially hide the video and show the placeholder image
+            placeholderImage.style.display = "block";  // Show image initially
+            youtubePlayer.style.display = "none";      // Hide video initially
+
+            // Widget Configuration
+            eraWidget.onConfiguration((configuration) => {
+                console.log("configuration:", configuration);
+                DOOR = configuration.realtime_configs[0];
+                LOCK = configuration.realtime_configs[1];
+            });
+
+            // Widget Values
+            eraWidget.onValues((values) => {
+                console.log("Value:", values);
+                if (DOOR && values[DOOR.id]) {
+                    let LOCKed = values[LOCK.id].value;
+                    console.log("LOCKed:", LOCKed);
+                    let NN = values[DOOR.id].value;
+                    console.log("nn:", NN);
+
+                    if (previousNN === 1 && NN === 0 && LOCKed !== 1) {
+                        youtubePlayer.src = "https://firebasestorage.googleapis.com/v0/b/video-ufo.appspot.com/o/UFO-CLOSE.mp4?alt=media&token=53807e15-1905-4d3a-8a2b-87f2f250f299";
+                        playVideo();
+                    } else if (NN === 1 && LOCKed !== 1) {
+                        youtubePlayer.src = "https://firebasestorage.googleapis.com/v0/b/video-ufo.appspot.com/o/UFO-OPEN.mp4?alt=media&token=bd6d2118-20f1-4f5d-80f3-ba37fdb644e2";
+                        playVideo();
+                    }
+                    previousNN = NN;
+                }
+            });
+
+            // Function to handle video playing based on sensor input
+            function playVideo() {
+                // Event listener to show video only when it is ready to play
+                youtubePlayer.oncanplay = function() {
+                    placeholderImage.style.display = "none"; // Hide image when video is ready
+                    youtubePlayer.style.display = "block";   // Show video
+                    youtubePlayer.play();
+                };
+
+                youtubePlayer.onended = function() {
+                    youtubePlayer.style.display = "none";   // Hide video when finished
+                    placeholderImage.style.display = "block"; // Show image again
+                };
+            }
+
+            eraWidget.ready();
+        });
+    </script> 
+
+    <!-- Footer with English information -->
+    <footer>
+        <p>Source: <a href="https://www.youtube.com/watch?v=tQ1nMJDWj3I" target="_blank">https://www.youtube.com/watch?v=tQ1nMJDWj3I</a></p>
+    </footer>
+
+</body>
+</html>
